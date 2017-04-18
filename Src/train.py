@@ -7,6 +7,10 @@ config = ConfigYoloV2()
 network = TinyYoloV2(config)
 dataset = UdacityData()
 
+def generator():
+    raise NotImplemented
+
+
 def train():
 
 

@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pickle
 import cv2
+import Src.utils as utils
 
 class NetworkSkeleton:
     def __init__(self, config):
@@ -26,7 +27,7 @@ class NetworkSkeleton:
         :param net_out: Output of the yolo network
         :return: loss
         """
-        # meta
+        # metakeras
         sprob = float(self.config.class_scale)
         sconf = float(self.config.object_scale)
         snoob = float(self.config.noobject_scale)
@@ -34,10 +35,10 @@ class NetworkSkeleton:
         S, B, C = self.config.side, self.config.num, self.config.classes
         SS = S * S # number of grid cells
 
-        print('{} loss hyper-parameters:'.format(m['model']))
-        print('\tside    = {}'.format(m['side']))
-        print('\tbox     = {}'.format(m['num']))
-        print('\tclasses = {}'.format(m['classes']))
+        print('{} loss hyper-parameters:'.format(self.config.name))
+        print('\tside    = {}'.format(self.config.side))
+        print('\tbox     = {}'.format(self.config.num))
+        print('\tclasses = {}'.format(self.config.classes))
         print('\tscales  = {}'.format([sprob, sconf, snoob, scoor]))
 
         size1 = [None, SS, C]
@@ -98,12 +99,12 @@ class NetworkSkeleton:
         self.fetch += [probs, confs, conid, cooid, proid]
         true = tf.concat([probs, confs, coord], 1)
         wght = tf.concat([proid, conid, cooid], 1)
-        print('Building {} loss'.format(m['model']))
+        print('Building {} loss'.format(self.model.name))
         loss = tf.pow(net_out - true, 2)
         loss = tf.multiply(loss, wght)
         loss = tf.reduce_sum(loss, 1)
         self.loss = .5 * tf.reduce_mean(loss)
-        tf.summary.scalar('{} loss'.format(m['model']), self.loss)
+        tf.summary.scalar('{} loss'.format(self.model.name), self.loss)
 
     def yolo2_loss(self, net_out):
         """
@@ -239,7 +240,29 @@ class NetworkSkeleton:
         feed_dict = {self.input : this_input}
 
         out = self.sess.run(self.out, feed_dict)[0]
-        boxes =
+        boxes = utils.yolo_convert_detections(out, self.config)
+        threshold = self.config.thresh
+        boxesInfo = list()
+        for box in boxes:
+            tmpBox = box.process_box(self.config, w, h, threshold)
+            if tmpBox is None:
+                continue
+            boxesInfo.append({
+                "label": tmpBox[4],
+                "confidence": tmpBox[6],
+                "topleft": {
+                    "x": tmpBox[0],
+                    "y": tmpBox[2]},
+                "bottomright": {
+                    "x": tmpBox[1],
+                    "y": tmpBox[3]
+                }
+            })
+
+        return boxesInfo
+
+    def predict
+
 
 
 
