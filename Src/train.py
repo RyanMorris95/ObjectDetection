@@ -1,6 +1,6 @@
-from config.config_yolov2 import ConfigYoloV2
-from dataset.udacity_data import UdacityData
-from nets.tiny_yolo_v2 import TinyYoloV2
+from Src.config.config_yolov2 import ConfigYoloV2
+from Src.dataset.udacity_data import UdacityData
+from Src.nets.tiny_yolo_v2 import TinyYoloV2
 
 # Create Objects
 config = ConfigYoloV2()
